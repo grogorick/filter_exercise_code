@@ -56,64 +56,68 @@ def filter_file(filename, lines, solution, comments):
         filtered_content.append(l)
     return filtered_content
 
-if len(sys.argv) <= 2:
-  print("> " + sys.argv[0] + " <task-dir> <exercise|solution>")
+if len(sys.argv) <= 1:
+  print("> " + sys.argv[0] + " <task-dir> [exercise|solution]")
   exit()
-
-solution = sys.argv[2] == "solution"
 
 base_dir = sys.argv[1]
 if base_dir[-1] not in ["/", "\\"]:
   base_dir = base_dir + "/"
 dirname = base_dir[:-2] # sheetXX_/ -> sheetXX
 
-base_outDir = dirname + ("_solution" if solution else "") + "/"
+def filter_directories(solution):
 
-def filter_directory(path, exclude_dirs, exclude_files):
-  dir = base_dir + path
-  outDir = base_outDir + path
-  if not os.path.exists(outDir):
-    os.makedirs(outDir)
+  base_outDir = dirname + ("_solution" if solution else "") + "/"
 
-  if os.path.isfile(dir + additional_exclude_dirs_filename):
-    with open(dir + additional_exclude_dirs_filename) as f:
-      exclude_dirs += tuple(filter(None, f.read().splitlines()))
+  def filter_directory(path, exclude_dirs, exclude_files):
+    dir = base_dir + path
+    outDir = base_outDir + path
+    if not os.path.exists(outDir):
+      os.makedirs(outDir)
 
-  if os.path.isfile(dir + additional_exclude_files_filename):
-    with open(dir + additional_exclude_files_filename) as f:
-      exclude_files += tuple(filter(None, f.read().splitlines()))
+    if os.path.isfile(dir + additional_exclude_dirs_filename):
+      with open(dir + additional_exclude_dirs_filename) as f:
+        exclude_dirs += tuple(filter(None, f.read().splitlines()))
 
-  _, directories, filenames = next(os.walk(dir), (None, [], []))
-  for filename in filenames:
-    if filename.startswith(exclude_files):
-      continue
+    if os.path.isfile(dir + additional_exclude_files_filename):
+      with open(dir + additional_exclude_files_filename) as f:
+        exclude_files += tuple(filter(None, f.read().splitlines()))
 
-    print("\n" + dir + filename + " ------------------------------")
+    _, directories, filenames = next(os.walk(dir), (None, [], []))
+    for filename in filenames:
+      if filename.startswith(exclude_files):
+        continue
 
-    file_ext = filename.rfind('.')
-    file_ext = filename[file_ext:] if file_ext > -1 else None
+      print("\n" + dir + filename + " ------------------------------")
 
-    comments = {}
-    for s in supported:
-        if file_ext in s["ext"]:
-            comments["replacement"] = s["replacement"]
+      file_ext = filename.rfind('.')
+      file_ext = filename[file_ext:] if file_ext > -1 else None
 
-    if not any([file_ext in s["ext"] for s in supported]):
-      print("- File extension " + file_ext + " not supported. File will be copied as is.\n")
-      shutil.copy2(dir + filename, outDir)
-      continue
+      comments = {}
+      for s in supported:
+          if file_ext in s["ext"]:
+              comments["replacement"] = s["replacement"]
 
-    print("- Filter file...\n")
-    lines = []
-    with open(dir + filename, "r") as f:
-      lines = f.readlines()
-    lines = filter_file(filename, lines, solution, comments)
-    for line in lines:
-      print(line, end="")
-    with open(outDir + filename, "w") as f:
-      f.writelines("".join(lines))
+      if not any([file_ext in s["ext"] for s in supported]):
+        print("- File extension " + file_ext + " not supported. File will be copied as is.\n")
+        shutil.copy2(dir + filename, outDir)
+        continue
 
-  for subdir in [p for p in directories if len(p) > 0 and not p.startswith(exclude_dirs)]:
-    filter_directory(path + subdir + "/", exclude_dirs, exclude_files)
+      print("- Filter file...\n")
+      lines = []
+      with open(dir + filename, "r") as f:
+        lines = f.readlines()
+      lines = filter_file(filename, lines, solution, comments)
+      for line in lines:
+        print(line, end="")
+      with open(outDir + filename, "w") as f:
+        f.writelines("".join(lines))
 
-filter_directory("", exclude_dirs_that_start_with, exclude_files_that_start_with)
+    for subdir in [p for p in directories if len(p) > 0 and not p.startswith(exclude_dirs)]:
+      filter_directory(path + subdir + "/", exclude_dirs, exclude_files)
+
+  filter_directory("", exclude_dirs_that_start_with, exclude_files_that_start_with)
+
+versions = ("exercise", "solution")
+for version in (sys.argv[2], ) if len(sys.argv) > 2 and sys.argv[2] in versions else versions:
+  filter_directories(version == "solution")
