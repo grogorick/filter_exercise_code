@@ -26,7 +26,9 @@ def filter_file(filename, lines, solution, comments):
 
         if "@EXERCISE" in l: # start solution code
             if "==>" in l:
-                ignore = False
+                ignore = False # start exercise and solution code
+            elif "== ==" in l:
+                ignore = True # start test code (neither in exercise nor in solution)
             else:
                 ignore = not solution
             indent = l[:len(l) - len(l.lstrip())]
@@ -36,7 +38,7 @@ def filter_file(filename, lines, solution, comments):
             ignore = solution
             continue
 
-        if "== ==" in l: # start test code (neither in task nor in solution code)
+        if "== ==" in l: # start test code (neither in task nor in solution)
             ignore = True
             continue
 
