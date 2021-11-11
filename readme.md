@@ -4,7 +4,7 @@ Annotate your code with simple control statements to maintain/extract exercise a
 
 ## Syntax
 
-> `@EXERCISE`  
+> `@EXERCISE`  or  `@==`  
 > \<solution code>  
 >
 > `==>`  
@@ -15,9 +15,9 @@ Annotate your code with simple control statements to maintain/extract exercise a
 >
 > `===` or `<==`
 
-You don't have to, for the filter script to work, but to be able to still directly run the annotated code you will want to put the control statements (`@EXERCISE` / `==>` / `== ==` / `===` / `<==`) in comments.
+You don't have to, for the filter script to work, but to be able to still directly run the annotated code you will want to put the control statements (`@EXERCISE` / `@==` / `==>` / `== ==` / `===` / `<==`) in comments.
 
-Lines with control statements are **removed entirely** in the output.
+Lines with control statements are **always removed entirely** in the output.
 
 
 ## Options

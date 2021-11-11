@@ -24,7 +24,7 @@ def filter_file(filename, lines, solution, comments):
     indent =  ""
     for l in lines:
 
-        if "@EXERCISE" in l: # start solution code
+        if ("@EXERCISE" in l) or ("@==" in l): # start solution code
             if "==>" in l:
                 ignore = False # start exercise and solution code
             elif "== ==" in l:
@@ -65,11 +65,18 @@ if len(sys.argv) <= 1:
 base_dir = sys.argv[1]
 if base_dir[-1] not in ["/", "\\"]:
   base_dir = base_dir + "/"
-dirname = base_dir[:-2] # sheetXX_/ -> sheetXX
+
+if base_dir[-2] == "_":
+  exercise_dir_name = ""
+  dirname = base_dir[:-2] # sheetXX_/ -> sheetXX
+else:
+  exercise_dir_name = "_exercise"
+  dirname = base_dir[:-1] # sheetXX/ -> sheetXX
+
 
 def filter_directories(solution):
 
-  base_outDir = dirname + ("_solution" if solution else "") + "/"
+  base_outDir = dirname + ("_solution" if solution else exercise_dir_name) + "/"
 
   def filter_directory(path, exclude_dirs, exclude_files):
     dir = base_dir + path
