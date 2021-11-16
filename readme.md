@@ -1,23 +1,26 @@
 # Filter script for exercise code
 
-Annotate your code with simple control statements to maintain/extract exercise and solution versions of the same code in/from one file.
+Annotate your code with simple control keywords to maintain/extract exercise and solution versions of the same code in/from one file.
 
 ## Syntax
 
-> `@EXERCISE`  or  `@==`  
+> `@SOLUTION`  
 > \<solution code>  
 >
-> `==>`  
+> `@EXERCISE`  
 > \<exercise code>  
 >
-> `== ==`  
-> \<test code>  
+> `@DEV`  
+> \<development code>  
 >
-> `===` or `<==`
+> `@===` or `@===?`
 
-You don't have to, for the filter script to work, but to be able to still directly run the annotated code you will want to put the control statements (`@EXERCISE` / `@==` / `==>` / `== ==` / `===` / `<==`) in comments.
+Respective sections (`@SOLUTION`, `@EXERCISE` or `@DEV`) may appear in any order, each starting with any of these control keywords, and must end with a line containing `@===` or `@===?`.
 
-Lines with control statements are **always removed entirely** in the output.
+Lines with control keywords are **always removed entirely** in the output.
+
+You don't have to, for the filter script to work, but to be able to still directly run the annotated development code you will want to put the control keywords in comments.  
+Also, most of the time, exercise code sections are best placed in (block) comments.
 
 
 ## Options
@@ -36,67 +39,71 @@ Lines with control statements are **always removed entirely** in the output.
 ## Running
 
 ```
-> python filter.py <path/to/source/directory_> [exercise | solution]
+> python filter.py <path/to/source/directory> [exercise | solution]
 ```
 
 Depending on the second parameter, the following directories will be generated
 (if the parameter is omitted, both are generated):
 ```
-path/to/source/directory            (exercise)
-path/to/source/directory_solution   (solution)
+path/to/source/directory_exercise
+path/to/source/directory_solution
 ```
-
-Note that the source directory name is assumed to end with an **underscore**, e.g. `path/to/code01_/`.
+If the source directory name ends wtih "`_`" (underscore) the exercise output directory will not be suffixed with `_exercise` but the underscore will be removed:
+```
+path/to/source/directory
+```
 
 
 ## Code annotation examples (Python)
 ```
+—————————————————————————————————————————————————————————————————————————
 SOURCE                    -> EXERCISE                  -> SOLUTION
+—————————————————————————————————————————————————————————————————————————
 ```
 
 Remove solution code in exercise files:
-```
-# @EXERCISE               ->                           -> solution_code()
-solution_code()
-# ===
+```python
+# @SOLUTION
+solution_code()           ->                           -> solution_code()
+# @===
 ```
 
 Replace solution code with dummy code in exercise files:
-```
-# @EXERCISE               -> dummy_code()              -> solution_code()
-solution_code()
-''' ==>
+```python
+# @SOLUTION
+solution_code()           -> dummy_code()              -> solution_code()
+''' @EXERCISE
 dummy_code()
-''' # ===
+@=== '''
 ```
 
 Place code in both exercise and solution files:
-```
-# @EXERCISE ==>           -> non_dev_code()            -> non_dev_code()
+```python
+# @SOLUTION @EXERCISE
 '''
 non_dev_code()
-''' # ===
+@=== '''                  -> non_dev_code()            -> non_dev_code()
 ```
 
-Remove code in both exercise and solution files:
+Remove development code in both exercise and solution files:
+```python
+# @DEV
+dev_code()                ->                           ->
+# @===
 ```
-# @EXERCISE == ==         ->                           ->
+
+Replace development code with actual code in both exercise and solution files:
+```python
+# @SOLUTION @EXERCISE
+actual_code()             -> actual_code()             -> actual_code()
+# @DEV
 dev_code()
-''' # ===
+# @===
 ```
 
-Replace dev code with actual code in both exercise and solution files:
-```
-# @EXERCISE ==>           -> actual_code()             -> actual_code()
-actual_code()
-# == ==
-dev_code()
-# ===
-```
-
-Append question marks in exercise files with `<==` instead of `===` at the end:
-```
-# @EXERCISE               -> #                         -> solution_code()
+End code sections with `@===?` instead of `@===` to insert question marks in exercise files:
+```python
+# @SOLUTION               -> #                         -> solution_code()
 solution_code()              # ???
-# <==                        #
+# @===?                      #
 ```

@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import sys
-import os
-import shutil
+
 
 supported = [
   { "ext": [".txt", ".py"],         "replacement": "{}#\n{}# ???\n{}#\n" },
@@ -16,53 +14,41 @@ exclude_files_that_start_with = (".", "_")
 additional_exclude_dirs_filename = "_filter_exclude_dirs"
 additional_exclude_files_filename = "_filter_exclude_files"
 
+
+
+import sys
+import os
+import shutil
+
 def filter_file(filename, lines, solution, comments):
 
     filtered_content = []
 
-    started = False
-    ignore = False
-    indent =  ""
+    code = ""
+
     for l in lines:
 
-        if not started and "@EXERCISE" in l: # start solution code
-            started = True
-            if "==>" in l:
-                ignore = False # start solution and exercise code
-            elif "== ==" in l:
-                ignore = True # start test code (neither in solution nor in exercise)
-            else:
-                ignore = not solution
+        if ("@SOLUTION" in l) or ("@EXERCISE" in l) or ("@DEV" in l):
+          code = ""
+
+          if "@SOLUTION" in l: # start _s_olution code
+            code += "s"
+          if "@EXERCISE" in l: # start _e_xercise code
+            code += "e"
+          if "@DEV" in l: # start _d_evelopment code (neither in exercise nor in solution)
+            code += "d"
+
+          continue
+
+        if ("@===" in l) or ("@===?" in l): # end code
+          code = ""
+          if (not solution) and ("@===?" in l): # place ??? here
             indent = l[:len(l) - len(l.lstrip())]
+            filtered_content.append(comments["replacement"].format(*([indent] * 3)))
+          continue
+
+        if (not solution and ("s" in code)) or (solution and ("e" in code)) or (("d" in code)):
             continue
-
-        if started:
-          if "@==" in l: # restart solution code
-              ignore = not solution
-              continue
-
-          if "==>" in l: # start exercise code
-              ignore = solution
-              continue
-
-          if "== ==" in l: # start test code (neither in task nor in solution)
-              ignore = True
-              continue
-
-          if "<==" in l: # end code, place ??? here
-              if not solution:
-                  filtered_content.append(comments["replacement"].format(*([indent] * 3)))
-              ignore = False
-              started = False
-              continue
-
-          if "===" in l: # end code without ???
-              ignore = False
-              started = False
-              continue
-
-          if ignore:
-              continue
 
         filtered_content.append(l)
     return filtered_content
@@ -81,7 +67,6 @@ if base_dir[-2] == "_":
 else:
   exercise_dir_name = "_exercise"
   dirname = base_dir[:-1] # sheetXX/ -> sheetXX
-
 
 def filter_directories(solution):
 
