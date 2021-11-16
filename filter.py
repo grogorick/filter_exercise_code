@@ -20,40 +20,49 @@ def filter_file(filename, lines, solution, comments):
 
     filtered_content = []
 
+    started = False
     ignore = False
     indent =  ""
     for l in lines:
 
-        if ("@EXERCISE" in l) or ("@==" in l): # start solution code
+        if not started and "@EXERCISE" in l: # start solution code
+            started = True
             if "==>" in l:
-                ignore = False # start exercise and solution code
+                ignore = False # start solution and exercise code
             elif "== ==" in l:
-                ignore = True # start test code (neither in exercise nor in solution)
+                ignore = True # start test code (neither in solution nor in exercise)
             else:
                 ignore = not solution
             indent = l[:len(l) - len(l.lstrip())]
             continue
 
-        if "==>" in l: # start exercise code
-            ignore = solution
-            continue
+        if started:
+          if "@==" in l: # restart solution code
+              ignore = not solution
+              continue
 
-        if "== ==" in l: # start test code (neither in task nor in solution)
-            ignore = True
-            continue
+          if "==>" in l: # start exercise code
+              ignore = solution
+              continue
 
-        if "<==" in l: # end code, place ??? here
-            if not solution:
-                filtered_content.append(comments["replacement"].format(*([indent] * 3)))
-            ignore = False
-            continue
+          if "== ==" in l: # start test code (neither in task nor in solution)
+              ignore = True
+              continue
 
-        if "===" in l: # end code without ???
-            ignore = False
-            continue
+          if "<==" in l: # end code, place ??? here
+              if not solution:
+                  filtered_content.append(comments["replacement"].format(*([indent] * 3)))
+              ignore = False
+              started = False
+              continue
 
-        if ignore:
-            continue
+          if "===" in l: # end code without ???
+              ignore = False
+              started = False
+              continue
+
+          if ignore:
+              continue
 
         filtered_content.append(l)
     return filtered_content
