@@ -47,8 +47,11 @@ def filter_file(filename, lines, solution, comments):
             filtered_content.append(comments["replacement"].format(*([indent] * 3)))
           continue
 
-        if (not solution and ("s" in code)) or (solution and ("e" in code)) or (("d" in code)):
-            continue
+        if not (
+            (("" == code) or
+             ("s" in code and solution) or
+             ("e" in code and not solution)) and ("d" not in code)):
+          continue
 
         filtered_content.append(l)
     return filtered_content
