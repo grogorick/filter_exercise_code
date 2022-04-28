@@ -77,10 +77,9 @@ dummy_code()
 @=== '''
 ```
 
-Place code in both exercise and solution files:
+Place code in both exercise and solution files but not in development code:
 ```python
-# @SOLUTION @EXERCISE
-'''
+''' @SOLUTION @EXERCISE
 non_dev_code()
 @=== '''                  -> non_dev_code()            -> non_dev_code()
 ```
@@ -94,9 +93,9 @@ dev_code()                ->                           ->
 
 Replace development code with actual code in both exercise and solution files:
 ```python
-# @SOLUTION @EXERCISE
+''' @SOLUTION @EXERCISE
 actual_code()             -> actual_code()             -> actual_code()
-# @DEV
+@DEV '''
 dev_code()
 # @===
 ```
