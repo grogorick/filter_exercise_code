@@ -8,11 +8,13 @@ supported = [
   { "ext": [".cpp", ".h", ".inl"],  "replacement": "{}/*\n{} ???\n {}*/\n" }
   ]
 
-exclude_dirs_that_start_with = (".", "_", "cmake-", "build-", "logs_")
+exclude_dirs_that_start_with = (".", "_", "cmake-", "build", "logs_")
 exclude_files_that_start_with = (".", "_")
 
 additional_exclude_dirs_filename = "_filter_exclude_dirs"
 additional_exclude_files_filename = "_filter_exclude_files"
+
+exclude_empty_files = True
 
 
 
@@ -20,7 +22,7 @@ import sys
 import os
 import shutil
 
-def filter_file(filename, lines, solution, comments):
+def filter_file(lines, solution, comments):
 
     filtered_content = []
 
@@ -113,11 +115,12 @@ def filter_directories(solution):
       lines = []
       with open(dir + filename, "r") as f:
         lines = f.readlines()
-      lines = filter_file(filename, lines, solution, comments)
+      lines = filter_file(lines, solution, comments)
       for line in lines:
         print(line, end="")
-      with open(outDir + filename, "w") as f:
-        f.writelines("".join(lines))
+      if not exclude_empty_files or len(lines) > 0:
+        with open(outDir + filename, "w") as f:
+          f.writelines("".join(lines))
 
     for subdir in [p for p in directories if len(p) > 0 and not p.startswith(exclude_dirs)]:
       filter_directory(path + subdir + "/", exclude_dirs, exclude_files)
